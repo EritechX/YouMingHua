@@ -1,0 +1,29 @@
+[data-ds-part="sidebar"] {
+  background-color: var(--ds-theme-color-panel);
+  color: var(--ds-theme-color-text);
+  border-right-color: var(--ds-theme-color-line);
+  border-right-style: solid;
+  border-right-width: 1px;
+  backdrop-filter: blur(12px);
+}
+[data-ds-part="composer"] {
+  background-color: var(--ds-theme-color-panel);
+  color: var(--ds-theme-color-text);
+  border-color: var(--ds-theme-color-line);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 16px;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(12px);
+}
+[data-ds-part="composer-toolbar"] {
+  color: var(--ds-theme-color-muted);
+}
+[data-ds-part="dialog"] {
+  background-color: var(--ds-theme-color-panel);
+  color: var(--ds-theme-color-text);
+  border-color: var(--ds-theme-color-line);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 16px;
+}

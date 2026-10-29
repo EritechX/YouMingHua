@@ -1,0 +1,105 @@
+name: Build YouMingHua (manual artifacts only)
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to build
+        type: choice
+        required: true
+        default: windows
+        options:
+          - windows
+          - macos
+          - both
+permissions:
+  contents: read
+jobs:
+  macos:
+    if: inputs.platform == 'macos' || inputs.platform == 'both'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify shared assets and distribution contract
+        run: |
+          node tools/sync-runtime-assets.mjs --check
+          node --test tools/*.test.mjs
+          node macos/scripts/injector.mjs --check-payload
+          node windows/scripts/injector.mjs --check-payload
+      - name: Test and build macOS
+        env:
+          CODEX_DREAM_SKIN_SKIP_SIGNED_RUNTIME_TESTS: '1'
+          CODEX_DREAM_SKIN_SKIP_DOCTOR: '1'
+        run: |
+          NODE="$(command -v node)" bash macos/tests/run-tests.sh
+          swift test --package-path macos/menubar-app
+          bash macos/scripts/build-dmg.sh --skip-tests
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: YouMingHua-macOS-test
+          path: |
+            macos/release/*.dmg
+            macos/release/*.sha256
+          if-no-files-found: error
+          retention-days: 3
+  windows:
+    if: inputs.platform == 'windows' || inputs.platform == 'both'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
+        with:
+          dotnet-version: '8.0.x'
+      - name: Verify shared assets
+        shell: bash
+        run: |
+          node tools/sync-runtime-assets.mjs --check
+          node --test tools/*.test.mjs
+          node --test windows/tests/*.test.mjs
+          node windows/scripts/injector.mjs --check-payload
+      - name: Test native theme manager
+        shell: pwsh
+        run: |
+          dotnet run --configuration Release --project windows/theme-manager/Tests/DreamSkin.ThemeManager.Tests.csproj
+          if ($LASTEXITCODE -ne 0) { throw 'Theme-manager tests failed' }
+          dotnet run --configuration Release --project windows/theme-manager/NativeTests/DreamSkin.ThemeManager.NativeTests.csproj
+          if ($LASTEXITCODE -ne 0) { throw 'Native Windows tests failed' }
+          node tools/build-theme-manager.mjs
+          if ($LASTEXITCODE -ne 0) { throw 'Theme-manager build failed' }
+      - name: Install pinned Inno Setup
+        shell: pwsh
+        run: |
+          choco upgrade innosetup --version=6.7.1 --allow-downgrade --no-progress --yes
+          if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed' }
+      - name: Test and build Windows installer
+        shell: pwsh
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy RemoteSigned -File windows/tests/run-tests.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'Windows tests failed' }
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy RemoteSigned -File windows/tests/installer-static.tests.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'Installer tests failed' }
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy RemoteSigned -File windows/installer/build-release.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'Windows installer build failed' }
+          Get-ChildItem release/YouMingHua-Setup-v*.exe | ForEach-Object {
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)" | Set-Content -LiteralPath "$($_.FullName).sha256" -Encoding ascii
+          }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: YouMingHua-Windows-test
+          path: |
+            release/*.exe
+            release/*.sha256
+          if-no-files-found: error
+          retention-days: 3

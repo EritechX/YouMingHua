@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "preset-youminghua",
+  "name": "又茗花",
+  "image": "background.png",
+  "appearance": "auto",
+  "art": {
+    "focusX": 0.74,
+    "focusY": 0.43,
+    "safeArea": "left",
+    "taskMode": "ambient"
+  },
+  "colors": {
+    "background": "#F7EEF2",
+    "panel": "#FCF7F9",
+    "panelAlt": "#EFE0E7",
+    "accent": "#D9A4BA",
+    "accentAlt": "#C78DA6",
+    "secondary": "#85889F",
+    "highlight": "#E8BACD",
+    "text": "#443B46",
+    "muted": "#746775",
+    "line": "#EBDCE4"
+  },
+  "tagline": "晓看天色暮看云，行也思君，坐也思君。"
+}
