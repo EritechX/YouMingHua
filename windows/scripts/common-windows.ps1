@@ -548,7 +548,8 @@ function Install-DreamSkinRuntimeEngine {
       (Get-Item -LiteralPath (Join-Path $sourceRoot 'DISTRIBUTION_VERSION'))) + @(
       Get-ChildItem -LiteralPath $sourceFileRoots -Recurse -File -Force -ErrorAction Stop
     )
-    $stagedFiles = @((Get-Item -LiteralPath (Join-Path $stagingRoot 'VERSION'))) + @(
+    $stagedFiles = @((Get-Item -LiteralPath (Join-Path $stagingRoot 'VERSION')),
+      (Get-Item -LiteralPath (Join-Path $stagingRoot 'DISTRIBUTION_VERSION'))) + @(
       Get-ChildItem -LiteralPath $stagedFileRoots -Recurse -File -Force -ErrorAction Stop
     )
     if ($sourceFiles.Count -ne $stagedFiles.Count) {
