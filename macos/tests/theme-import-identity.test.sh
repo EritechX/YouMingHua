@@ -45,7 +45,7 @@ make_fallback_archive() {
   local id_kind="$3"
   local invalid_appearance="${4:-false}"
   /bin/mkdir -p "$source_dir"
-  /bin/cp "$PROJECT_ROOT/docs/images/gallery/skin-01.jpg" "$source_dir/background.jpg"
+  /bin/cp "$PROJECT_ROOT/windows/assets/dream-reference.jpg" "$source_dir/background.jpg"
   "$NODE" -e '
     const fs = require("node:fs");
     const [file, idKind, invalidAppearance] = process.argv.slice(1);

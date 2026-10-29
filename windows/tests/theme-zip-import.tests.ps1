@@ -83,8 +83,7 @@ function Write-TestFallbackIdThemePack {
     [Parameter(Mandatory = $true)][ValidateSet('Missing', 'NonString')][string]$IdKind
   )
   New-Item -ItemType Directory -Path $Directory -Force | Out-Null
-  $projectRoot = Split-Path -Parent $Root
-  Copy-Item -LiteralPath (Join-Path $projectRoot 'docs\images\gallery\skin-01.jpg') `
+  Copy-Item -LiteralPath (Join-Path $Root 'assets\dream-reference.jpg') `
     -Destination (Join-Path $Directory 'background.jpg') -Force
   $theme = [ordered]@{
     schemaVersion = 1

@@ -13,10 +13,9 @@ const killHook = path.join(here, "theme-import-kill-hook.cjs");
 const fixtureImage = path.join(macosRoot, "assets", "portal-hero.png");
 const crossPlatformFixtureImage = path.join(
   projectRoot,
-  "docs",
-  "images",
-  "gallery",
-  "skin-01.jpg",
+  "windows",
+  "assets",
+  "dream-reference.jpg",
 );
 const tempRoot = await fs.mkdtemp(path.join("/tmp", "codex-dream-skin-publish-"));
 const themesRoot = path.join(tempRoot, "themes");
