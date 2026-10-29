@@ -14,8 +14,9 @@ const fixtureImage = path.join(macosRoot, "assets", "portal-hero.png");
 const crossPlatformFixtureImage = path.join(
   projectRoot,
   "windows",
-  "assets",
-  "dream-reference.jpg",
+  "tests",
+  "fixtures",
+  "import-identity.jpg",
 );
 const tempRoot = await fs.mkdtemp(path.join("/tmp", "codex-dream-skin-publish-"));
 const themesRoot = path.join(tempRoot, "themes");
