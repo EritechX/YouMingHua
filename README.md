@@ -6,15 +6,14 @@
 
 ## 下载
 
-| 平台 | 系统要求 | 安装文件 |
+| 平台 | 系统要求 | 下载 v1.0.0 测试版 |
 | --- | --- | --- |
-| macOS | macOS 13 或更新版本，Apple Silicon / Intel | `YouMingHua-v1.0.0.dmg` |
-| Windows | Windows 10 / 11，x64 | `YouMingHua-Setup-v1.0.0.exe` |
+| macOS | macOS 13 或更新版本，Apple Silicon / Intel | [下载安装包（DMG）](https://github.com/EritechX/YouMingHua/releases/download/v1.0.0/YouMingHua-v1.0.0.dmg) |
+| Windows | Windows 10 / 11，x64 | [下载安装包（EXE）](https://github.com/EritechX/YouMingHua/releases/download/v1.0.0/YouMingHua-Setup-v1.0.0.exe) |
 
-目前提供小范围测试包，**尚未在 [Releases](https://github.com/EritechX/YouMingHua/releases) 发布长期下载文件**：
+[版本说明与全部文件](https://github.com/EritechX/YouMingHua/releases/tag/v1.0.0) · [SHA-256 校验文件](https://github.com/EritechX/YouMingHua/releases/download/v1.0.0/SHA256SUMS.txt)
 
-- **Windows**：登录 GitHub 后，打开[已通过的构建记录](https://github.com/EritechX/YouMingHua/actions/runs/40908179224)，在页面底部 **Artifacts** 下载 `YouMingHua-Windows-test`，解压后运行其中的 `.exe`。构建产物只保留 **3 天**；过期后请向维护者索取安装包。
-- **macOS**：当前 DMG 由维护者直接提供，暂未上传到仓库下载页。
+安装包保存在 Releases，不受 Actions 构建产物的 3 天保留期限影响。
 
 安装包已内置主题和所需资源，**无需下载源码、安装开发工具或额外导入主题 ZIP**。GitHub 的「Code → Download ZIP」下载的是源码，不是安装包。
 
