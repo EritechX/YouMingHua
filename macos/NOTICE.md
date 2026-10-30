@@ -13,6 +13,16 @@ It does **not** grant rights to:
 - Any user-supplied images or third-party artwork you drop into a theme
 - Character likenesses, franchise art, or celebrity imagery
 
+## Artwork credit and license
+
+The theme background is adapted from an original work by **祝雨晴桐**, licensed under [CC BY-NC-SA 4.0 (Attribution–NonCommercial–ShareAlike 4.0 International)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+This project used AI-assisted redrawing, background simplification, palette and composition changes, and image resizing. The adapted theme background is also provided under **CC BY-NC-SA 4.0**. Redistribution and further adaptations must retain the artist credit, license link and modification notice, remain noncommercial, and share adaptations under the same license. Attribution does not imply the original artist's endorsement.
+
+The artwork license is separate from the MIT license for the software code. Include this notice when sharing a theme or installer containing this background.
+
+Bundled background paths: `macos/presets/preset-youminghua/background.png` and `windows/presets/preset-youminghua/background.png`.
+
 ## Demo artwork
 
 `assets/portal-hero.png` is original abstract geometric art generated for this open-source repository (no characters). Replace it with your own image before shipping a branded theme to customers.

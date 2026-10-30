@@ -2,7 +2,7 @@
 
 为 Codex / ChatGPT 桌面端制作的淡粉色主题工具，内置又茗花背景、明暗配色和界面兼容补丁，支持跟随系统切换外观。
 
-基于 [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin) v1.5.21，定制版版本为 **1.0.0**。沿用上游 MIT 许可及版权声明，非 OpenAI 官方产品。上游说明见 [README.upstream.md](README.upstream.md)。
+基于 [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin) v1.5.21，定制版版本为 **1.0.0**。软件代码沿用上游 MIT 许可及版权声明；主题背景另遵循 CC BY-NC-SA 4.0，署名见下文。非 OpenAI 官方产品。上游说明见 [README.upstream.md](README.upstream.md)。
 
 ## 下载
 
@@ -53,6 +53,16 @@ Windows 包已通过 GitHub Actions 构建和自动测试，macOS 包已通过�
 - **反馈问题**：通过 [Issues](https://github.com/EritechX/YouMingHua/issues) 提供系统版本、官方客户端版本、操作步骤和截图；Windows 请同时注明显示缩放比例，截图中请遮住私人聊天和账号信息。
 
 首页标语为“晓看天色暮看云，行也思君，坐也思君。”。
+
+## 图片作者与许可
+
+主题背景基于 **祝雨晴桐** 的原作品制作。原作品采用 [CC BY-NC-SA 4.0（署名—非商业性使用—相同方式共享 4.0 国际）](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 许可。
+
+本项目对原图进行了 AI 辅助重绘、背景简化、配色及构图调整，并调整了图片尺寸；修改后的主题背景同样以 **CC BY-NC-SA 4.0** 提供。转载或再创作时须保留作者署名、许可链接和修改说明，仅限非商业性使用，衍生作品须按相同协议共享。署名不表示原作者为本项目背书。
+
+图片许可独立于软件代码的 MIT 许可。分享包含此背景的主题或安装包时，请一并保留本声明。
+
+[独立图片许可声明](ARTWORK-LICENSE.md)（分享安装包时请一并附上）。
 
 ## 本地构建
 
