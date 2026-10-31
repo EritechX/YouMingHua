@@ -361,7 +361,8 @@ fi
 
 # seed_bundled_presets is idempotent and must never touch user custom-* packs.
 /usr/bin/env HOME="$TMP/seed-home" /bin/bash -c '
-  . "$1/scripts/common-macos.sh"
+  ROOT="$1"
+  . "$ROOT/scripts/common-macos.sh"
   ensure_state_root
   themes="$STATE_ROOT/themes"
   /bin/mkdir -p "$themes/custom-keepme"
