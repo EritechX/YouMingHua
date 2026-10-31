@@ -27,6 +27,7 @@ jobs:
           node-version: '22'
       - name: Verify shared assets and distribution contract
         run: |
+          node tools/check-versions.mjs
           node tools/sync-runtime-assets.mjs --check
           node --test tools/*.test.mjs
           node macos/scripts/injector.mjs --check-payload
@@ -64,6 +65,7 @@ jobs:
       - name: Verify shared assets
         shell: bash
         run: |
+          node tools/check-versions.mjs
           node tools/sync-runtime-assets.mjs --check
           node --test tools/*.test.mjs
           node --test windows/tests/*.test.mjs
