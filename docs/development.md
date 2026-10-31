@@ -29,7 +29,7 @@ node windows/scripts/injector.mjs --check-payload
 
 ## 分支规则维护
 
-[仓库规则设置](https://github.com/EritechX/YouMingHua/settings/rules) 中的 `Protect main` 规则与 `.github/main-ruleset.json` 对应。该文件是可审查的配置记录；修改文件不会自动变更 GitHub 设置。必需检查名是 `PR checks`，来源限定为 GitHub Actions。不要只改工作流中的检查名，否则合并会一直等待旧名称。
+[已启用的 Protect main 规则](https://github.com/EritechX/YouMingHua/rules/26264723)与 `.github/main-ruleset.json` 对应。该文件是可审查的配置记录；修改文件不会自动变更 GitHub 设置。必需检查名是 `PR checks`，来源限定为 GitHub Actions。不要只改工作流中的检查名，否则合并会一直等待旧名称。
 
 ## 构建与发布
 
