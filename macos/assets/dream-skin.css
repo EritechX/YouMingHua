@@ -2095,3 +2095,12 @@ html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-b
     color: var(--ds-on-accent) !important;
   }
 }
+
+/* Chat's adaptive footer paints an extra rounded surface behind its trailing
+   controls. In multiline layout that grid cell stretches across the row.
+   The themed composer already owns the surface; keep this inner layer clear
+   without changing the native grid, expansion animation or button surfaces. */
+html[data-dream-skin="active"] [data-chatgpt-composer]
+  [data-ds-part="composer-toolbar"] > [class~="bg-(--composer-layout-surface-background)"] {
+  background: transparent !important;
+}

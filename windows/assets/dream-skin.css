@@ -2096,6 +2096,15 @@ html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-b
   }
 }
 
+/* Chat's adaptive footer paints an extra rounded surface behind its trailing
+   controls. In multiline layout that grid cell stretches across the row.
+   The themed composer already owns the surface; keep this inner layer clear
+   without changing the native grid, expansion animation or button surfaces. */
+html[data-dream-skin="active"] [data-chatgpt-composer]
+  [data-ds-part="composer-toolbar"] > [class~="bg-(--composer-layout-surface-background)"] {
+  background: transparent !important;
+}
+
 /* Windows 26.930 application-menu chrome already overlays the painted main.
    The macOS titlebar extension instead paints at y=0, doubling the Windows
    menu scrim and ending mid-header. Keep only the existing native surfaces.
