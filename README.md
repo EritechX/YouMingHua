@@ -6,10 +6,10 @@
 
 | 平台 | 系统要求 | 下载 |
 | --- | --- | --- |
-| macOS | macOS 13+，Apple Silicon / Intel | [DMG 安装包](https://github.com/EritechX/YouMingHua/releases/download/v1.0.0/YouMingHua-v1.0.0.dmg) |
-| Windows | Windows 10 / 11，x64 | [EXE 安装包](https://github.com/EritechX/YouMingHua/releases/download/v1.0.0/YouMingHua-Setup-v1.0.0.exe) |
+| macOS | macOS 13+，Apple Silicon / Intel | [DMG 安装包](https://github.com/EritechX/YouMingHua/releases/download/v1.0.1/YouMingHua-v1.0.1.dmg) |
+| Windows | Windows 10 / 11，x64 | [EXE 安装包](https://github.com/EritechX/YouMingHua/releases/download/v1.0.1/YouMingHua-Setup-v1.0.1.exe) |
 
-当前版本：**v1.0.0 测试版** · [版本说明](https://github.com/EritechX/YouMingHua/releases/tag/v1.0.0) · [文件校验](https://github.com/EritechX/YouMingHua/releases/download/v1.0.0/SHA256SUMS.txt)
+当前版本：**v1.0.1 测试版** · [版本说明](https://github.com/EritechX/YouMingHua/releases/tag/v1.0.1) · [文件校验](https://github.com/EritechX/YouMingHua/releases/download/v1.0.1/SHA256SUMS.txt)
 
 主题已包含在安装包中，无需另外导入或安装开发工具。
 

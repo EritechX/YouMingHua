@@ -1,5 +1,10 @@
 # Windows Changelog
 
+## 又茗花 1.0.1（定制版）
+
+- 修复 Chat 模式下模型选择器旁多余的胶囊底色，以及多行输入时底色横向铺满工具栏的问题；保留原生按钮位置和换行布局。共享样式已同步到 macOS 与 Windows。
+- 上游引擎版本仍为 1.5.21。完整说明见 [v1.0.1 发布说明](../docs/releases/v1.0.1.md)。
+
 ## 1.5.21
 
 - 修复启用 `NODE_USE_ENV_PROXY` 时，Node 的无害 stderr 警告被 Windows PowerShell 5.1 升级为终止错误、导致安装或主题操作失败的问题；图片、Safe CSS、主题 ZIP 和 payload 校验统一通过原生命令封装执行。

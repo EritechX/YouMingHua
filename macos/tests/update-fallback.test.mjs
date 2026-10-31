@@ -11,7 +11,7 @@ test("custom distribution does not access or advertise the upstream update servi
   const result = spawnSync("/bin/bash", [fileURLToPath(sourceURL), "--json"], {encoding:"utf8"});
   assert.equal(result.status, 0, result.stderr);
   const value = JSON.parse(result.stdout);
-  assert.equal(value.currentVersion, "v1.0.0");
+  assert.equal(value.currentVersion, "v1.0.1");
   assert.equal(value.latestVersion, null);
   assert.equal(value.updateChannelConfigured, false);
   assert.equal(value.updateAvailable, false);

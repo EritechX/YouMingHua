@@ -97,7 +97,7 @@ done
 UPDATE_JSON="$("$ROOT/scripts/check-update-macos.sh" --json)"
 "$NODE" -e '
   const value = JSON.parse(process.argv[1]);
-  if (value.currentVersion !== "v1.0.0" || value.latestVersion !== null) process.exit(1);
+  if (value.currentVersion !== "v1.0.1" || value.latestVersion !== null) process.exit(1);
   if (value.updateAvailable || value.releaseUrl !== null || value.channel !== "unconfigured" || value.updateChannelConfigured !== false) process.exit(1);
 ' "$UPDATE_JSON"
 "$NODE" --test "$ROOT/tests/update-fallback.test.mjs"

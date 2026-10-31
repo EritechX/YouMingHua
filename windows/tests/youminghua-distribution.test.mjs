@@ -41,7 +41,7 @@ test("fork installer cannot claim the upstream URL scheme or update channel", ()
 
 test("fork upgrade revision is separate from engine payload version", () => {
   assert.equal(read("VERSION").trim(), "1.5.21");
-  assert.equal(read("DISTRIBUTION_VERSION").trim(), "1.0.0");
+  assert.equal(read("DISTRIBUTION_VERSION").trim(), "1.0.1");
   const builder = read("installer/build-release.ps1");
   assert.match(builder, /\/DAppVersion=\$distributionVersion/);
   const bootstrap = read("installer/setup-bootstrap.ps1");

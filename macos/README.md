@@ -1,11 +1,11 @@
 # 又茗花 · macOS
 
-基于 Codex Dream Skin 1.5.21 的固定版本定制，应用版本为 1.0.0。预置「又茗花」壁纸与明暗配色，通过本机回环 CDP 为官方 Codex / ChatGPT 桌面端加载主题。
+基于 Codex Dream Skin 1.5.21 的固定版本定制，应用版本为 1.0.1。预置「又茗花」壁纸与明暗配色，通过本机回环 CDP 为官方 Codex / ChatGPT 桌面端加载主题。
 
 ## 安装测试包
 
 1. 先安装官方 Codex / ChatGPT，启动一次后完全退出。
-2. 打开 `YouMingHua-v1.0.0.dmg`，将「又茗花.app」拖入「Applications」。
+2. 打开 `YouMingHua-v1.0.1.dmg`，将「又茗花.app」拖入「Applications」。
 3. 打开「又茗花」。首次启动会部署独立引擎并准备默认主题；从菜单栏应用皮肤即可。
 4. 在官方应用中将外观设为「跟随系统」，主题会配合明暗模式切换。
 
