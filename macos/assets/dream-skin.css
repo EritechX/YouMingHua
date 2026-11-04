@@ -1979,16 +1979,17 @@ html[data-dream-skin="active"][data-dream-shell="light"][style*="--ds-bg: #F7EEF
 
 /* YouMingHua full-bleed shell. Native PageSurfaceLayout reserves trailing and
    bottom padding for its inset rounded page. Remove that inset together with
-   the inner round clipping; the native window remains the outer clip. */
+   the inner round clipping; the native window remains the outer clip. Match
+   both module-name formats without including FullHeightPageSurfaceLayout. */
 html[data-dream-skin="active"]:not([data-codex-os="win32"]):is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
-  [class*="_PageSurfaceLayout_"] {
+  :is([class*="_PageSurfaceLayout_"], [class^="PageSurfaceLayout-"], [class*=" PageSurfaceLayout-"]) {
   --app-shell-page-inline-end-inset: 0px;
   padding-inline-end: 0 !important;
   padding-block-end: 0 !important;
 }
 
 html[data-dream-skin="active"]:not([data-codex-os="win32"]):is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
-  [class*="_PageSurfaceLayout_"] main[data-app-shell-main-surface="default"] {
+  :is([class*="_PageSurfaceLayout_"], [class^="PageSurfaceLayout-"], [class*=" PageSurfaceLayout-"]) main[data-app-shell-main-surface="default"] {
   --app-shell-main-surface-top-start-radius: 0px;
   --app-shell-main-surface-top-end-radius: 0px;
   clip-path: none !important;
@@ -2000,7 +2001,7 @@ html[data-dream-skin="active"]:not([data-codex-os="win32"]):is([style*="--ds-bg:
 }
 
 html[data-dream-skin="active"]:not([data-codex-os="win32"]):is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
-  [class*="_PageSurfaceLayout_"] [data-app-shell-page-surface="true"] {
+  :is([class*="_PageSurfaceLayout_"], [class^="PageSurfaceLayout-"], [class*=" PageSurfaceLayout-"]) [data-app-shell-page-surface="true"] {
   border-radius: 0 !important;
   border-start-start-radius: 0 !important;
   border-start-end-radius: 0 !important;
@@ -2010,7 +2011,7 @@ html[data-dream-skin="active"]:not([data-codex-os="win32"]):is([style*="--ds-bg:
 }
 
 html[data-dream-skin="active"]:not([data-codex-os="win32"]):is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
-  [class*="_PageSurfaceLayout_"] [data-app-shell-header-placement="page"] [data-app-shell-main-titlebar] {
+  :is([class*="_PageSurfaceLayout_"], [class^="PageSurfaceLayout-"], [class*=" PageSurfaceLayout-"]) [data-app-shell-header-placement="page"] [data-app-shell-main-titlebar] {
   border-start-end-radius: 0 !important;
 }
 
