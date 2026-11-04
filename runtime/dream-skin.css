@@ -2021,9 +2021,12 @@ html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-b
 }
 
 /* YouMingHua: native conversation footer paints via CSS modules, not the old
-   bg-gradient-to-t utility. Only clear aria-hidden, pointer-inert paint nodes. */
+   bg-gradient-to-t utility. Support both _name_hash and name-hash module names
+   (26.1029+); only clear aria-hidden, pointer-inert paint nodes. */
 html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
-  .thread-scroll-container [aria-hidden="true"].pointer-events-none.absolute[class*="_background_"]:is([class*="_fade_"], [class*="_surface_"], [class*="_combined_"]) {
+  .thread-scroll-container [aria-hidden="true"].pointer-events-none.absolute[class*="_background_"]:is([class*="_fade_"], [class*="_surface_"], [class*="_combined_"]),
+html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
+  .thread-scroll-container [aria-hidden="true"].pointer-events-none.absolute:is([class^="background-"], [class*=" background-"]):is([class^="fade-"], [class*=" fade-"], [class^="surface-"], [class*=" surface-"], [class^="combined-"], [class*=" combined-"]) {
   background: transparent !important;
   background-image: none !important;
 }
