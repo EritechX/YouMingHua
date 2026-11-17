@@ -2032,6 +2032,13 @@ html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-b
   background-image: none !important;
 }
 
+/* 26.1111 draws the bottom feather with two pseudo-elements on the footer
+   wrapper. Its own opacity token covers both the gradient and the solid tail. */
+html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
+  .pointer-events-none.absolute:has(> [data-thread-scroll-footer="true"] [data-thread-composer-backdrop] [data-composer-body]) {
+  --thread-feather-opacity: 0 !important;
+}
+
 /* The right titlebar slot is a separate sibling of the main titlebar scrim.
    The trailing end-slot is a separate sibling; cover it only while the right
    actual side panel is open (not a retained titlebar container). Both slots share a paired surface and foreground. */
