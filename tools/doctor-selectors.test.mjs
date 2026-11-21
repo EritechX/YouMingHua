@@ -11,8 +11,8 @@ assert.equal(
 );
 assert.equal(
   selectorFor("header-tint"),
-  "header:is(.app-header-tint, [data-app-shell-header-edge-scroll], [class*=\"_Header_\"])",
-  "The header contract must support both legacy and Codex 26.727 headers.",
+  "header:is(.app-header-tint, [data-app-shell-header-edge-scroll], [data-app-shell-titlebar=\"true\"], [class*=\"_Header_\"])",
+  "The header contract must support legacy headers and the Codex 26.1117 shell titlebar.",
 );
 assert.match(selectorFor("shell-main"), /\[class\*=\"_MainContentSurface_\"\]/);
 assert.match(selectorFor("header-tint"), /\[class\*=\"_Header_\"\]/);
