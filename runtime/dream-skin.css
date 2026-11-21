@@ -1921,6 +1921,13 @@ html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #24252C
 
 html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #24252C" i] .thread-scroll-container .alert-root.bg-danger-surface { border-left: 3px solid #AE8096 !important; }
 
+/* 26.1117 places a second painted surface behind main. The wallpaper
+   already has its own readability veil; clear only this decorative backing. */
+html[data-dream-skin="active"][data-dream-art-wide="true"][data-dream-art-ready="true"]:not([data-dream-task-mode="off"])
+  [data-app-shell-workspace] > [data-app-shell-surface-backing="true"][aria-hidden="true"] {
+  background-color: transparent !important;
+}
+
 /* Neutral night composition: independently control the wallpaper veil. */
 html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #24252C" i] {
   --ds-task-immersive-edge: rgba(36, 37, 44, .90);
@@ -2037,6 +2044,15 @@ html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-b
 html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
   .pointer-events-none.absolute:has(> [data-thread-scroll-footer="true"] [data-thread-composer-backdrop] [data-composer-body]) {
   --thread-feather-opacity: 0 !important;
+}
+
+/* 26.1117 still draws the same two decorative layers, but no longer
+   reads --thread-feather-opacity. Leave the footer and composer intact. */
+html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
+  .pointer-events-none.absolute:has(> [data-thread-scroll-footer="true"] [data-thread-composer-backdrop] [data-composer-body])::before,
+html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
+  .pointer-events-none.absolute:has(> [data-thread-scroll-footer="true"] [data-thread-composer-backdrop] [data-composer-body])::after {
+  content: none !important;
 }
 
 /* The right titlebar slot is a separate sibling of the main titlebar scrim.

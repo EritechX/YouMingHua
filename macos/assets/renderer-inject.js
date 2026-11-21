@@ -848,7 +848,13 @@
     addPart(desired, "composer-toolbar", [
       ...selectorNodes("composer-toolbar"), ...fallbackComposerToolbarNodes(composerNodes),
     ]);
-    addPart(desired, "dialog", selectorNodes("overlay-dialog"));
+    // Native hover cards put role=dialog on a zero-sized popover host.
+    // Blurring that host traps its fixed, anchor-positioned child at (0, 0).
+    // Theme the painted surface instead; leave ordinary dialogs unchanged.
+    addPart(desired, "dialog", selectorNodes("overlay-dialog").map((node) =>
+      (node.matches("[popover]") &&
+        node.querySelector(":scope > [data-anchor-positioning][data-placement]")) || node
+    ));
     const homeHero = selectorNodes("game-source")[0] ??
       selectorNodes("home-icon")[0]?.parentElement;
     addPart(desired, "home-hero", homeHero ? [homeHero] : []);
