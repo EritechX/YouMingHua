@@ -34,3 +34,9 @@ node windows/scripts/injector.mjs --check-payload
 ## 构建与发布
 
 完整 DMG/EXE 构建仍使用手动工作流 `Build YouMingHua (manual artifacts only)`。PR 检查不生成安装包、不创建标签、不发布 Release。发布时仍须固定源码提交，执行双平台构建并核对安装包摘要；详见 [Release 说明规范](releases/README.md)。
+
+### 输入框、消息和滚动的浏览器回归
+
+在仓库根目录运行 `python3 tools/check-streaming.py`，可用独立 Chrome 窗口验证发送后跟随到底部、手动上滚后停止跟随，以及流式内容更新时是否触发整页扫描。默认使用 macOS 上的 Chrome；其他安装位置可传 `--browser <可执行文件>`。测试只加载本地样例和发行版资源。
+
+用 Chromium 打开 `tools/fixtures/composer-trailing-controls.html` 可查看模型选择器在 Work 和旧版 Chat 的单行／多行布局；`tools/fixtures/message-surfaces.html` 检查追加消息、展开的问答、命令输出和报错。两个页面都在 `#result` 输出 `PASS` 或失败原因。

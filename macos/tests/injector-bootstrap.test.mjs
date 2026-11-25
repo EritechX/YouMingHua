@@ -207,9 +207,13 @@ assert.match(identityProbeSource, /app-shell-header-context-menu-surface/,
 assert.doesNotMatch(identityProbeSource, /document\.title|document\.body\?\.innerText|location\.href/,
   "The live target probe must not read page title, body text, or URL.");
 assert.doesNotMatch(identityProbeSource, /\(main && input\) \|\||\(main && branded\) \|\||\(input && branded\)/);
-const discoveryStart = source.indexOf("record.earlyScriptId = await registerEarly");
-const probeStart = source.indexOf("const probe = await waitForCodexProbe", discoveryStart);
-assert.ok(discoveryStart >= 0 && probeStart > discoveryStart, "Early registration must happen before full shell probing.");
+const watcher = source.slice(source.indexOf("async function runWatch("));
+const probeStart = watcher.indexOf("const probe = await probeSession(session);");
+const rejectStart = watcher.indexOf("if (!probe?.codex)", probeStart);
+const publishStart = watcher.indexOf("sessions.set(target.id, record)");
+const installStart = watcher.indexOf("record.earlyScriptId = await registerEarlyForRecord");
+assert.ok(probeStart > 0 && rejectStart > probeStart && publishStart > rejectStart && installStart > publishStart,
+  "Identity must be established before theme refresh or initial registration can send the skin.");
 assert.match(
   source,
   /finally\s*\{[\s\S]*Promise\.all\(\[\.\.\.sessions\.values\(\)\][\s\S]*removeEarly\(record\)/,

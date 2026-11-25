@@ -249,22 +249,31 @@ export function assessRendererVerification(renderer, nativeWindow, expected) {
   const fallbackWindowPass = nativeWindow?.status === "unsupported";
   const windowPass = documentVisible && viewportPass
     && (nativeWindowPass || fallbackWindowPass);
-  const basePass = result.installed && result.version === expected.skinVersion
-    && result.stylePresent && result.businessClassPollution === 0
-    && structurePass && windowPass && !result.documentOverflow?.x;
-  const payloadPass = (!expected.expectedThemeId || result.themeId === expected.expectedThemeId)
-    && (!expected.expectedRevision || result.revision === expected.expectedRevision);
+  const themeMatches = !expected.expectedThemeId || result.themeId === expected.expectedThemeId;
+  const revisionMatches = !expected.expectedRevision || result.revision === expected.expectedRevision;
+  const payloadPass = themeMatches && revisionMatches;
   const visibleSuggestionLabels = Array.isArray(result.suggestionLabels)
     ? result.suggestionLabels.filter((item) => item?.visible) : [];
   const homeFallbackVisible = Boolean(homeRoute && result.homePresent && result.genericMain?.visible);
-  const homePass = !homeRoute || (
-    result.homePresent && ((result.hero?.visible && result.hero.width >= 280
-      && result.hero.height >= 120) || homeFallbackVisible)
-    && (result.visibleCardCount === 0 || (
-      visibleSuggestionLabels.length >= result.visibleCardCount
-      && result.suggestionLabelColorsMatch
-    ))
-  );
+  const required = {
+    skinActive: result.installed,
+    engineVersion: result.version === expected.skinVersion,
+    stylePresent: result.stylePresent,
+    cleanClasses: result.businessClassPollution === 0,
+    structure: structurePass,
+    documentVisible,
+    viewportSize: viewportPass,
+    nativeWindow: nativeWindowPass || fallbackWindowPass,
+    noHorizontalOverflow: !result.documentOverflow?.x,
+    themeMatches,
+    revisionMatches,
+    homePresent: !homeRoute || result.homePresent,
+    homeContent: !homeRoute || homeFallbackVisible ||
+      (result.hero?.visible && result.hero.width >= 280 && result.hero.height >= 120),
+    homeLabels: !homeRoute || result.visibleCardCount === 0 ||
+      (visibleSuggestionLabels.length >= result.visibleCardCount && result.suggestionLabelColorsMatch),
+  };
+  result.failedChecks = Object.keys(required).filter((key) => !required[key]);
 
   result.nativeWindow = nativeWindow;
   result.checks = {
@@ -276,7 +285,7 @@ export function assessRendererVerification(renderer, nativeWindow, expected) {
     viewportPass,
     windowPass,
   };
-  result.pass = Boolean(basePass && homePass && payloadPass);
+  result.pass = result.failedChecks.length === 0;
   result.expectedThemeId = expected.expectedThemeId;
   result.expectedRevision = expected.expectedRevision;
   result.softNotes = {
@@ -546,15 +555,12 @@ async function probeSession(session) {
   })()`);
 }
 
-async function waitForCodexProbe(session, timeoutMs = 1800) {
-  const deadline = Date.now() + timeoutMs;
-  let probe = null;
-  while (Date.now() < deadline) {
-    probe = await probeSession(session);
-    if (probe?.codex) return probe;
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-  return probe;
+// An excluded pet route is definitive until navigation. An unbranded app
+// shell may simply not have mounted yet; retry only the cheap identity probe.
+function nextWindowCheck(target, previous, excluded, now) {
+  const delay = excluded ? Infinity
+    : previous?.url === target.url ? Math.min(previous.delay * 2, 8000) : 250;
+  return { url: target.url, delay, after: now + delay };
 }
 
 async function connectTarget(target, port) {
@@ -1281,6 +1287,20 @@ export async function waitForVerifiedSession(
     }
     await new Promise((resolve) => setTimeout(resolve, retryDelay));
   }
+  // Emit one compact sample per expired deadline. The full renderer result
+  // includes UI text and must stay out of the persistent diagnostic logs.
+  const sample = lastResult;
+  const visibleAnchors = ["shell", "sidebar", "composer", "genericMain", "genericInput", "settings"]
+    .filter((key) => sample?.[key]?.visible);
+  console.error("[dream-skin] verification-timeout " + JSON.stringify({
+    time: new Date().toISOString(), target: session.target?.id, timeoutMs,
+    failed: sample?.failedChecks ?? ["no-renderer-sample"],
+    lastSampleError: lastError ? "renderer-evaluation-failed" : undefined,
+    route: sample?.scope?.baseState, level: sample?.scope?.level,
+    missing: sample?.scope?.missingL1, visibleAnchors,
+    viewport: sample?.viewport, visibility: sample?.documentVisibility,
+    nativeWindow: sample?.nativeWindow,
+  }));
   if (!lastResult && lastError) throw lastError;
   return lastResult;
 }
@@ -1676,7 +1696,7 @@ async function watchOperationState(statePath, onState) {
 async function runWatch(options) {
   let current = await loadPayload(options.themeDir);
   const sessions = new Map();
-  const rejected = new Set();
+  const rejected = new Map();
   let stopping = false;
   let reloadTimer = null;
   let reloadChain = Promise.resolve();
@@ -2019,6 +2039,7 @@ async function runWatch(options) {
       }
 
       const activeIds = new Set(targets.map((target) => target.id));
+      for (const id of rejected.keys()) if (!activeIds.has(id)) rejected.delete(id);
       for (const [id, record] of sessions) {
         if (!activeIds.has(id) || record.session.closed) {
           if (!record.session.closed && record.operationToken && !record.operationExternal) {
@@ -2036,6 +2057,8 @@ async function runWatch(options) {
       let recoveryFailedThisCycle = false;
       for (const target of targets) {
         if (sessions.has(target.id)) continue;
+        const lastCheck = rejected.get(target.id);
+        if (lastCheck?.url === target.url && Date.now() < lastCheck.after) continue;
         let session;
         let record;
         let connectionEpoch;
@@ -2043,6 +2066,18 @@ async function runWatch(options) {
         beginTargetSetup();
         try {
           session = await connectTarget(target, options.port);
+          const probe = await probeSession(session);
+          if (!probe?.codex) {
+            if (probe?.excludedPetSurface && !await cleanupExcludedSurface(session)) {
+              throw new Error("Excluded Pet surface cleanup did not verify");
+            }
+            rejected.set(target.id, nextWindowCheck(target, lastCheck, probe?.excludedPetSurface, Date.now()));
+            session.close();
+            continue;
+          }
+          rejected.delete(target.id);
+          // Publish to the theme-reload/operation loops only after identity is
+          // confirmed: they too can send the complete theme to active sessions.
           record = {
             session,
             earlyScriptId: null,
@@ -2079,22 +2114,6 @@ async function runWatch(options) {
               console.error(`[dream-skin] early injection unavailable: ${error.message}`);
             }
           }
-          const probe = await waitForCodexProbe(session);
-          if (!probe?.codex) {
-            await removeEarly(record);
-            if (probe?.excludedPetSurface && !await cleanupExcludedSurface(session)) {
-              throw new Error("Excluded Pet surface cleanup did not verify");
-            }
-            session.close();
-            sessions.delete(target.id);
-            if (!probe?.excludedPetSurface && !rejected.has(target.id)) {
-              console.error(`[dream-skin] rejected non-ChatGPT app target ${target.id}`);
-              rejected.add(target.id);
-            }
-            if (probe?.excludedPetSurface) rejected.delete(target.id);
-            continue;
-          }
-          rejected.delete(target.id);
           if (controlOnly || pausing || mutationEpoch !== connectionEpoch) {
             await invalidateEarly(record);
           }

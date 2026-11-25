@@ -257,6 +257,11 @@ function makeFixture({
     body,
     adoptedStyleSheets: adopted ? [] : undefined,
     createElement(tag) { return tag === "style" ? makeStyleNode() : { tagName: tag }; },
+    createTreeWalker(element) {
+      const descendants = (node) => (node.children || []).flatMap((child) => [child, ...descendants(child)]);
+      const children = descendants(element);
+      return { nextNode: () => children.shift() || null };
+    },
     getElementById(id) { return nodes.get(id) || null; },
     querySelector(selector) {
       return (selectorNodes.get(selector) || [])[0] || null;
@@ -303,6 +308,7 @@ function makeFixture({
     MutationObserver: MockMutationObserver,
     CSSStyleSheet: adopted ? MockSheet : undefined,
     Blob,
+    AbortController,
     Uint8Array,
     atob,
     URL: {
@@ -392,7 +398,12 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.doesNotMatch(template, /electron-opaque|home-suggestion-list-item/,
     "Runtime payload must not carry retired selector documentation/fossils.");
   assert.doesNotMatch(template, /classList\.(add|remove|toggle)/);
-  assert.doesNotMatch(template, /getBoundingClientRect|ResizeObserver/);
+  assert.doesNotMatch(template, /getBoundingClientRect/);
+  const sendStart = template.indexOf("  const watchSend = (event) => {");
+  const sendEnd = template.indexOf("  const cleanup = () => {");
+  assert.ok(sendStart >= 0 && sendEnd > sendStart);
+  assert.doesNotMatch(template.slice(0, sendStart) + template.slice(sendEnd), /ResizeObserver/,
+    "Only an in-flight send may observe transcript size.");
   assert.match(template, /childList:\s*true/);
   assert.match(template, /subtree:\s*true/);
   // The new contract intentionally keeps the `data-dream-*` attribute names
@@ -843,7 +854,7 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(navigatedPet.revoked.length, 1,
     "Pet cleanup must revoke the previous wallpaper blob URL.");
   const dynamicMessage = home.addDynamicMessage();
-  partObserver.callback([{ type: "childList" }]);
+  partObserver.callback([{ type: "childList", target: dynamicMessage.parentElement, addedNodes: [dynamicMessage], removedNodes: [] }]);
   home.flushTimers(80);
   assert.equal(dynamicMessage.getAttribute("data-ds-part"), "message");
   assert.equal(state.metrics.routePasses, 2,
@@ -1064,6 +1075,23 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(state.metrics.navigationEvents, 1);
   assert.equal(state.metrics.routePasses, 3);
 
+  // Plain prose does not schedule a full document walk. A removed node
+  // with structural meaning still needs to clean annotations and parts.
+  const message = home.partFixtures.assistantMessage;
+  message.closest = (selector) => selector.includes("article, ") ? message : null;
+  const code = { nodeType: 1, tagName: "CODE", namespaceURI: "http://www.w3.org/1999/xhtml",
+    attributes: [{ name: "class" }], classList: ["language-js"] };
+  const text = { nodeType: 3 };
+  const normal = { type: "childList", target: message, addedNodes: [text, code], removedNodes: [] };
+  const beforeProse = state.metrics.partPasses;
+  partObserver.callback([normal]);
+  home.flushTimers(80);
+  assert.equal(state.metrics.partPasses, beforeProse, "Streaming prose must not trigger a structural pass");
+  const formerNestedDialog = { ...code, attributes: [{ name: "role" }] };
+  partObserver.callback([{ ...normal, removedNodes: [formerNestedDialog] }]);
+  home.flushTimers(80);
+  assert.equal(state.metrics.partPasses, beforeProse + 1, "Removing a nested structural node must still reconcile parts");
+
   const settings = makeFixture({ nativeAppearance: "light", settings: true });
   vm.runInNewContext(settings.payloadFor(), settings.context);
   assert.equal(settings.window.__CODEX_DREAM_SKIN_STATE__.scope.baseState, "settings");
@@ -1159,7 +1187,7 @@ export async function runRendererRuntimeTest(assetRoot) {
   assert.equal(predicates.partFixtures.main.getAttribute(marker), null,
     "Structural attribute changes must invalidate cached matches");
   predicateMatches = [predicates.partFixtures.main];
-  for (let i = 0; i < 5; i++) predicateObserver.callback([{ type: "childList" }]);
+  for (let i = 0; i < 5; i++) predicateObserver.callback([{ type: "childList", target: predicates.partFixtures.main, addedNodes: [], removedNodes: [] }]);
   predicates.flushTimers(100);
   assert.equal(predicateState.metrics.predicatePasses, beforePredicates + 2,
     "Streaming DOM bursts must coalesce into one predicate pass");
@@ -1167,6 +1195,18 @@ export async function runRendererRuntimeTest(assetRoot) {
   predicateState.cleanup();
   assert.equal(predicates.partFixtures.main.getAttribute(marker), null,
     "Cleanup must remove private markers from detached routes too");
+
+  const nativePredicates = makeFixture();
+  const nativeSelectors = [
+    ":has(*)",
+    ':has([data-response-annotation-conversation][data-response-annotation-target], [class~="group/activity-header"])',
+    ":has([data-user-message-bubble], .bg-user-message)",
+  ];
+  vm.runInNewContext(nativePredicates.payloadFor({}, nativeSelectors.map((selector) =>
+    `.fixture${selector} { color: red; }`).join("\n")), nativePredicates.context);
+  const nativeCss = nativePredicates.document.adoptedStyleSheets[0].text;
+  for (const selector of nativeSelectors) assert.ok(nativeCss.includes(selector),
+    "Local fade and streaming activity selectors must react natively");
 
   const localBackgrounds = makeFixture();
   const communityCss = `@layer dreamskin-community {

@@ -5,10 +5,12 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  SKIN_VERSION,
   assessRendererVerification,
   classifyNativeWindowError,
   classifyNativeWindowResponse,
   inspectNativeWindow,
+  waitForVerifiedSession,
 } from "../scripts/injector.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -55,7 +57,54 @@ const baseRenderer = {
 };
 
 assert.equal(readyNativeWindow.status, "ready");
-assert.equal(assessRendererVerification(baseRenderer, readyNativeWindow, exactPayload).pass, true);
+const ready = assessRendererVerification(baseRenderer, readyNativeWindow, exactPayload);
+assert.equal(ready.pass, true);
+assert.deepEqual(ready.failedChecks, []);
+
+// Keep actionable failed gates in the timeout sample without recording UI text
+// or a renderer exception. Stub evaluation, window inspection and the clock.
+const diagnosticLines = [];
+const failedRenderer = {
+  ...baseRenderer,
+  documentVisibility: "hidden",
+  revision: "old-theme-revision",
+  documentOverflow: { x: true },
+  suggestionLabels: [{ visible: true, text: "PRIVATE LABEL" }],
+};
+const failedChecks = ["documentVisible", "noHorizontalOverflow", "revisionMatches"];
+assert.deepEqual(
+  assessRendererVerification(failedRenderer, readyNativeWindow, exactPayload).failedChecks,
+  failedChecks,
+);
+const originalNow = Date.now;
+const originalConsoleError = console.error;
+let now = 0;
+console.error = (line) => diagnosticLines.push(line);
+Date.now = () => now;
+try {
+  const sample = await waitForVerifiedSession({
+    target: { id: "fixture" },
+    async evaluate() {
+      if (now !== 0) {
+        now = 10;
+        throw new Error("PRIVATE EXCEPTION");
+      }
+      now += 1;
+      return { ...failedRenderer, version: SKIN_VERSION };
+    },
+    async send() { return { windowId: 7, bounds: readyNativeWindow.bounds }; },
+  }, 10, exactPayload.expectedThemeId, exactPayload.expectedRevision, 0);
+  assert.equal(sample.pass, false);
+} finally {
+  Date.now = originalNow;
+  console.error = originalConsoleError;
+}
+assert.equal(diagnosticLines.length, 1);
+assert.doesNotMatch(diagnosticLines[0], /PRIVATE/);
+const diagnostic = JSON.parse(diagnosticLines[0].replace("[dream-skin] verification-timeout ", ""));
+assert.equal(diagnostic.lastSampleError, "renderer-evaluation-failed");
+assert.equal(diagnostic.visibility, "hidden");
+assert.deepEqual(diagnostic.failed, failedChecks);
 
 // Codex 26.721.x sometimes renders game-source/home suggestions before
 // home-icon. In that interval homeRoute is already a real [role=main], so
@@ -277,8 +326,10 @@ case " $* " in
     [ ! -f "$VERIFY_COUNT" ] || count="$(/bin/cat "$VERIFY_COUNT")"
     count=$((count + 1))
     /usr/bin/printf '%s\\n' "$count" > "$VERIFY_COUNT"
-    [ "\${VERIFY_ALWAYS_FAIL:-0}" != "1" ] || exit 2
-    [ "$count" -gt 1 ] || exit 2
+    if [ "\${VERIFY_ALWAYS_FAIL:-0}" = "1" ] || [ "$count" -le 1 ]; then
+      /usr/bin/printf '%s\\n' '[dream-skin] verification-timeout {"failed":["documentVisible"]}' >&2
+      exit 2
+    fi
     ;;
   *" --once "*) /usr/bin/printf 'once\\n' >> "$NODE_LOG" ;;
 esac
@@ -364,6 +415,8 @@ mark_state_active() { /usr/bin/printf 'active\\n' > "$ACTIVE_MARKER"; }
   assert.equal(await fs.readFile(environment.VERIFY_COUNT, "utf8"), "2\n");
   assert.equal(await fs.readFile(environment.NODE_LOG, "utf8"), "once\n");
   assert.equal(await fs.readFile(environment.ACTIVE_MARKER, "utf8"), "active\n");
+  assert.match(await fs.readFile(path.join(fixtureRoot, "start-error.log"), "utf8"),
+    /verification-timeout .*documentVisible/);
   watcherPid = Number((await fs.readFile(environment.WATCHER_PID_FILE, "utf8")).trim());
   if (Number.isSafeInteger(watcherPid) && watcherPid > 1) {
     try { process.kill(watcherPid, "SIGTERM"); } catch {}
