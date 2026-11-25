@@ -2,6 +2,10 @@ name: Build YouMingHua (manual artifacts only)
 on:
   workflow_dispatch:
     inputs:
+      source_commit:
+        description: Optional full release commit for rebuilding an existing tag
+        type: string
+        required: false
       platform:
         description: Platform to build
         type: choice
@@ -22,6 +26,14 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_commit || github.sha }}
+      - name: Confirm exact package source
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.source_commit || github.sha }}
+        run: |
+          git rev-parse HEAD
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
@@ -54,8 +66,22 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        # Read tagged sources with their repository line endings, including older
+        # workflow-contract tests which match literal LF-delimited YAML.
+        env:
+          GIT_CONFIG_COUNT: '1'
+          GIT_CONFIG_KEY_0: core.autocrlf
+          GIT_CONFIG_VALUE_0: 'false'
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_commit || github.sha }}
+      - name: Confirm exact package source
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.source_commit || github.sha }}
+        run: |
+          git rev-parse HEAD
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
