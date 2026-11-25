@@ -2,6 +2,10 @@ name: Build YouMingHua (manual artifacts only)
 on:
   workflow_dispatch:
     inputs:
+      source_commit:
+        description: Optional full release commit for rebuilding an existing tag
+        type: string
+        required: false
       platform:
         description: Platform to build
         type: choice
@@ -22,6 +26,14 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_commit || github.sha }}
+      - name: Confirm exact package source
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.source_commit || github.sha }}
+        run: |
+          git rev-parse HEAD
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
@@ -56,6 +68,23 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_commit || github.sha }}
+      - name: Confirm exact package source
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.source_commit || github.sha }}
+        run: |
+          git rev-parse HEAD
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Restore canonical workflow text for tagged contract tests
+        if: inputs.source_commit != ''
+        shell: bash
+        run: |
+          # Older tags test the YAML with literal LF. Read the original blob,
+          # unchanged, instead of the Windows worktree's CRLF representation.
+          file=.github/workflows/pr-checks.yml
+          git cat-file blob "HEAD:$file" > "$file"
+          git diff --exit-code HEAD -- "$file"
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'

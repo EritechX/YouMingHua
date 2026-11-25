@@ -44,7 +44,7 @@ test("gate rejects failed, cancelled, unexpectedly skipped and missing checks", 
 });
 
 test("PR workflow remains read-only, always reports its gate, and never packages releases", () => {
-  const yaml = readFileSync(new URL("../.github/workflows/pr-checks.yml", import.meta.url), "utf8");
+  const yaml = readFileSync(new URL("../.github/workflows/pr-checks.yml", import.meta.url), "utf8").replaceAll("\r\n", "\n");
   assert.match(yaml, /pull_request:\n    branches: \[main\]/);
   assert.match(yaml, /permissions:\n  contents: read/);
   assert.match(yaml, /name: PR checks\n    needs: \[shared, macos, windows\]\n    if: always\(\)/);
