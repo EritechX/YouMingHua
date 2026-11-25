@@ -20,8 +20,8 @@
 ## Release install (recommended for users)
 
 Download `YouMingHua-Setup-vX.Y.Z.exe` from
-[GitHub Releases](https://github.com/Fei-Away/Codex-Dream-Skin/releases) and
-follow [`docs/install-windows.md`](../docs/install-windows.md). The installer
+[YouMingHua Releases](https://github.com/EritechX/YouMingHua/releases) and
+follow the [Windows installation guide (Chinese)](../README.md#windows). The installer
 contains the pinned Node runtime, so users do not need a source checkout or to
 run a `.ps1` file. It installs per-user and should not request administrator
 access. An unsigned download may occasionally trigger SmartScreen; use

@@ -1,6 +1,6 @@
 # 又茗花 Windows 构建
 
-此目录是又茗花定制版的 Windows 源码，基于 Dream Skin 1.5.21。分发版本位于 `DISTRIBUTION_VERSION`（当前 1.0.0），引擎协议版本继续使用 `VERSION`（1.5.21）。没有配置在线发布地址；更新菜单只说明如何向分发者取得新安装包。
+此目录是又茗花定制版的 Windows 源码，基于 Dream Skin 1.5.21。分发版本位于 `DISTRIBUTION_VERSION`，引擎协议版本继续使用 `VERSION`（1.5.21）。没有配置在线发布地址；更新菜单只说明如何向分发者取得新安装包。
 
 安装器为当前用户安装到 `%LOCALAPPDATA%\Programs\YouMingHua`，运行状态、主题和引擎放在 `%LOCALAPPDATA%\YouMingHua`。快捷方式显示「又茗花」，Inno AppId 和互斥锁独立于上游。安装器不注册 `dreamskin://`，因此不会接管原版的一键换肤协议。磁盘上可与原版共存；同一 Codex 会话只应启动一个换肤引擎。
 
@@ -13,7 +13,7 @@
 - 运行 `powershell.exe -NoProfile -File windows\tests\run-tests.ps1`。
 - 运行 `powershell.exe -NoProfile -File windows\installer\build-release.ps1`。
 
-默认产物是 `release\YouMingHua-Setup-v1.0.0.exe`。构建会下载并校验固定的 Node 22.23.1 x64 ZIP，也可用 `-NodeArchivePath` 指定已下载副本。构建、测试、安装验收、签名和发布是独立阶段；macOS 上通过的 Node 或 .NET Core 检查不等于 Windows 原生安装验收。
+默认产物是 `release\YouMingHua-Setup-vX.Y.Z.exe`，版本号取自 `DISTRIBUTION_VERSION`。构建会下载并校验固定的 Node 22.23.1 x64 ZIP，也可用 `-NodeArchivePath` 指定已下载副本。构建、测试、安装验收、签名和发布是独立阶段；macOS 上通过的 Node 或 .NET Core 检查不等于 Windows 原生安装验收。
 
 ## 可选签名
 
