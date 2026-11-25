@@ -1520,8 +1520,9 @@ try {
       throw "Renderer adaptive behavior is missing: $requiredRendererBehavior"
     }
   }
+  # renderer-inject.test.mjs below enforces that only a pending send may observe size.
   foreach ($forbiddenRendererBehavior in @(
-    'getBoundingClientRect', 'ResizeObserver',
+    'getBoundingClientRect',
     'classList.add', 'classList.remove', 'classList.toggle',
     'syncRouteState', 'samplingNativeShell', 'dream-home-utility'
   )) {

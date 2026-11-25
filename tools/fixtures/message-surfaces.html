@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN" data-dream-skin="active" data-dream-shell="light" style="--ds-bg: #F7EEF2; --ds-text-rgb: 68 59 70; --ds-text: #443b46; --ds-panel-rgb: 252 247 249">
+<meta charset="utf-8">
+<title>Camellia activity surface regression</title>
+<link rel="stylesheet" href="../../macos/assets/dream-skin.css">
+<style>
+  body { margin: 0; font: 16px/1.55 system-ui }
+  .thread-scroll-container { display: grid; gap: 18px; padding: 32px; min-height: 400px; align-content: start;
+    background: linear-gradient(#f7eef2bf,#f7eef2bf), url(../../macos/presets/preset-youminghua/background.png) center / cover; color: var(--ds-text); }
+  .bg-user-message { justify-self: end; border-radius: 14px; padding: 8px 12px }
+  .bg-execution-output, .bg-execution-traceback { padding: 8px; margin-top: 6px }
+  button { font: inherit; color: inherit; border: 0; background: transparent; cursor: pointer }
+  output { display:none }
+</style>
+<div class="thread-scroll-container">
+  <div id="finalReply" data-local-conversation-final-assistant="true" data-ds-part="message">可以在日志里找到这次请求。</div>
+  <div id="bubble" class="bg-user-message">请求返回了什么错误？</div>
+  <div id="progress" data-local-conversation-item-target-ids="p"><div id="annotation" data-response-annotation-conversation="c" data-response-annotation-target="p">
+    我先查这次请求有没有到达本机服务。
+  </div></div>
+  <div id="command" data-local-conversation-item-target-ids="c"><div class="group/activity-header"><button id="toggle" aria-expanded="false">运行了命令</button></div><div id="details" hidden><div id="normal" class="bg-execution-output">服务状态</div><div id="errorLine" class="bg-execution-traceback">连接失败</div></div></div>
+  <div id="followup" data-local-conversation-item-target-ids="steer"><div style="display:flex;justify-content:flex-end"><div id="steerBubble" data-user-message-bubble class="bg-user-message">补充一下：请把状态显示在页面顶部。</div></div></div>
+  <div id="question" data-local-conversation-item-target-ids="input"><div class="group/activity-header"><button id="showAnswers" aria-expanded="false">已问 1 个问题</button></div><div id="answers" hidden class="flex flex-col gap-3 pt-1 pb-0.5"><div class="flex flex-col gap-1"><span>状态放在哪？</span> <span>页面顶部。</span></div></div></div>
+</div>
+<output id="result">pending</output>
+<script>
+const root=document.documentElement, css=getComputedStyle;
+function assert(ok, label){if(!ok) throw Error(label)}
+function clear(el){const s=css(el); return s.backgroundColor==='rgba(0, 0, 0, 0)' && s.backgroundImage==='none' && s.backdropFilter==='none' && s.boxShadow==='none'}
+toggle.onclick=()=>{details.hidden=!details.hidden; toggle.setAttribute('aria-expanded',String(!details.hidden))};
+showAnswers.onclick=()=>{answers.hidden=!answers.hidden;showAnswers.setAttribute('aria-expanded',String(!answers.hidden))};
+try {
+ for(const [mode,bg,user,out,err] of [
+   ['light','#F7EEF2','248, 238, 243','252, 249, 251','255, 246, 248'],
+   ['dark','#24252C','55, 52, 62','46, 47, 54','54, 49, 55'],
+   ['dark','#1E1A24','59, 44, 60','43, 37, 49','56, 40, 51']]){
+   root.dataset.dreamShell=mode;root.style.setProperty('--ds-bg',bg);
+   for(const el of [progress,command,finalReply]) assert(clear(el)&&css(el).borderTopWidth==='1px','frame: '+mode+'/'+el.id);
+   assert(clear(annotation)&&css(annotation).borderTopWidth==='0px','nested frame');
+   assert(css(bubble).backgroundColor==='rgb('+user+')','user bubble');
+   assert(clear(followup)&&css(followup).borderTopWidth==='0px'&&css(followup).paddingTop==='0px'&&css(steerBubble).backgroundColor==='rgb('+user+')','follow-up bubble');
+   assert(clear(question)&&answers.hidden,'collapsed question');
+   showAnswers.click();assert(!answers.hidden&&clear(answers)&&clear(question),'expanded answers');showAnswers.click();
+   toggle.click();assert(!details.hidden && clear(command) && css(normal).backgroundColor==='rgb('+out+')' && css(errorLine).backgroundColor==='rgb('+err+')','expanded output');
+   toggle.click();assert(details.hidden && clear(command),'collapsed');
+ }
+ root.dataset.dreamShell='light';root.style.setProperty('--ds-bg','#F7EEF2');
+ if(location.hash==='#expanded')showAnswers.click();
+ result.textContent='PASS';
+} catch(e){result.textContent=e.message}
+</script>
+</html>

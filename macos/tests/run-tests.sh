@@ -170,7 +170,8 @@ if ! /usr/bin/cmp -s "$ROOT/assets/renderer-inject.js" "$PROJECT_ROOT/windows/as
   printf 'macOS and Windows runtime assets are not byte-identical.\n' >&2
   exit 1
 fi
-if /usr/bin/grep -E -q 'getBoundingClientRect|ResizeObserver|classList\.(add|remove|toggle)|syncRouteState|samplingNativeShell' \
+# renderer-inject.test.mjs below enforces that only a pending send may observe size.
+if /usr/bin/grep -E -q 'getBoundingClientRect|classList\.(add|remove|toggle)|syncRouteState|samplingNativeShell' \
     "$ROOT/assets/renderer-inject.js"; then
   printf 'Unified renderer still contains retired layout/class behavior.\n' >&2
   exit 1
@@ -188,6 +189,7 @@ fi
 "$NODE" "$ROOT/scripts/injector.mjs" --check-payload >/dev/null
 "$NODE" "$ROOT/tests/image-metadata.test.mjs"
 "$NODE" "$ROOT/tests/injector-bootstrap.test.mjs"
+"$NODE" "$ROOT/tests/watcher-navigation.test.mjs"
 "$NODE" "$ROOT/tests/window-readiness.test.mjs"
 "$NODE" "$ROOT/tests/renderer-inject.test.mjs"
 "$NODE" "$ROOT/tests/safe-css-validator.test.mjs"

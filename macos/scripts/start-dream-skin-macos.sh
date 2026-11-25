@@ -167,7 +167,7 @@ cleanup_verify_output() {
   [ -z "${VERIFY_OUTPUT:-}" ] || /bin/rm -f "$VERIFY_OUTPUT"
   VERIFY_OUTPUT=""
 }
-if "$NODE" "$INJECTOR" --verify --port "$PORT" --theme-dir "$THEME_DIR" --timeout-ms 20000 >"$VERIFY_OUTPUT" 2>/dev/null; then
+if "$NODE" "$INJECTOR" --verify --port "$PORT" --theme-dir "$THEME_DIR" --timeout-ms 20000 >"$VERIFY_OUTPUT" 2>>"$START_ERROR_LOG"; then
   verify_code=0
 else
   verify_code=$?
@@ -178,11 +178,11 @@ if [ "$verify_code" -ne 0 ]; then
   activate_codex_window
   if [ -n "$OPERATION_TOKEN" ]; then
     "$NODE" "$INJECTOR" --once --port "$PORT" --theme-dir "$THEME_DIR" --timeout-ms 15000 \
-      --operation-token "$OPERATION_TOKEN" >/dev/null 2>&1 || true
+      --operation-token "$OPERATION_TOKEN" >/dev/null 2>>"$START_ERROR_LOG" || true
   else
-    "$NODE" "$INJECTOR" --once --port "$PORT" --theme-dir "$THEME_DIR" --timeout-ms 15000 >/dev/null 2>&1 || true
+    "$NODE" "$INJECTOR" --once --port "$PORT" --theme-dir "$THEME_DIR" --timeout-ms 15000 >/dev/null 2>>"$START_ERROR_LOG" || true
   fi
-  if "$NODE" "$INJECTOR" --verify --port "$PORT" --theme-dir "$THEME_DIR" --timeout-ms 12000 >"$VERIFY_OUTPUT" 2>/dev/null; then
+  if "$NODE" "$INJECTOR" --verify --port "$PORT" --theme-dir "$THEME_DIR" --timeout-ms 12000 >"$VERIFY_OUTPUT" 2>>"$START_ERROR_LOG"; then
     verify_code=0
   else
     verify_code=$?

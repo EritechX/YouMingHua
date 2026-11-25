@@ -60,8 +60,16 @@
   }
   // Cache structural :has() predicates as element markers. Chromium otherwise
   // re-evaluates these stylesheet conditions during every native hover update.
+  // Keep local predicates native: enumerating every element for the childless
+  // fade guard is expensive, and activity attributes/classes can change in
+  // place during streaming without changing the shell structure.
+  const nativePredicates = new Set([
+    ":has(*)",
+    ':has([data-response-annotation-conversation][data-response-annotation-target], [class~="group/activity-header"])',
+    ":has([data-user-message-bubble], .bg-user-message)",
+  ]);
   const CSS_PREDICATES = __DREAM_SKIN_CSS_PREDICATES_JSON__
-    .filter((item) => cssText.includes(item.selector));
+    .filter((item) => !nativePredicates.has(item.selector) && cssText.includes(item.selector));
   for (const { selector, replacement } of CSS_PREDICATES) {
     cssText = cssText.replaceAll(selector, replacement);
   }
@@ -338,8 +346,9 @@
 
   // Paired palettes for the bundled YouMingHua theme and legacy imports.
   const YOUMINGHUA_PALETTES = {"light": {"background": "#F7EEF2", "panel": "#FCF7F9", "panelAlt": "#EFE0E7", "accent": "#D9A4BA", "accentAlt": "#C78DA6", "secondary": "#85889F", "highlight": "#E8BACD", "text": "#443B46", "muted": "#746775", "line": "#EBDCE4"}, "dark": {"background": "#24252C", "panel": "#2E2F36E6", "panelAlt": "#35353DE6", "accent": "#D9A4BA", "accentAlt": "#C78DA6", "secondary": "#A8AEBE", "highlight": "#BEA3B3", "text": "#E5E1E7", "muted": "#B6B1BC", "line": "#4C4953"}};
+  const isYouMingHuaTheme = ["preset-youminghua", "camellia-blush-auto"].includes(THEME.id);
   const applyTheme = (root, shell) => {
-    const youminghuaPalette = ["preset-youminghua", "camellia-blush-auto"].includes(THEME.id) ? YOUMINGHUA_PALETTES[shell] : null;
+    const youminghuaPalette = isYouMingHuaTheme ? YOUMINGHUA_PALETTES[shell] : null;
     const declaredColors = youminghuaPalette ?? (THEME.colors && typeof THEME.colors === "object" ? THEME.colors : {});
     const legacyPalette = THEME.palette && typeof THEME.palette === "object" ? THEME.palette : {};
     // macOS themes use the full `colors` contract; older Windows themes used
@@ -935,6 +944,53 @@
     for (const node of document.querySelectorAll(`[${PART_ATTR}]`)) node.removeAttribute?.(PART_ATTR);
   };
 
+  // Mirror the existing native pane visibility rule onto its paint owners,
+  // not onto <html>. Resizing a header button must not invalidate the document.
+  const paneSelector = 'aside[data-app-shell-focus-area="right-panel"]';
+  const barSelector = '[data-app-shell-titlebar="true"], [data-app-shell-focus-area="right-panel"][data-app-shell-titlebar-slot="content"]';
+  const landmarks = paneSelector + ", " + barSelector;
+  const openPane = paneSelector + ':not([aria-hidden="true"], [inert], [style*="width: 0px"], [data-app-shell-active-page="false"] *)';
+  const previewAttr = "data-dream-preview-open";
+  const panes = new Set(), bars = new Set();
+  const updatePreviewBars = () => {
+    const open = [...panes].some((pane) => pane.isConnected && pane.matches(openPane));
+    for (const bar of bars) if (bar.hasAttribute(previewAttr) !== open) bar.toggleAttribute(previewAttr, open);
+  };
+  const paneObserver = cssText.includes(previewAttr) && typeof MutationObserver === "function"
+    ? new MutationObserver(updatePreviewBars) : null;
+  const reconcilePreviewBars = (records) => {
+    if (!paneObserver) return;
+    let dirty = !records, rebind = false;
+    const register = (el) => {
+      if (!el.isConnected) return;
+      if (el.matches(paneSelector) && !panes.has(el)) { panes.add(el); rebind = true; }
+      if (el.matches(barSelector)) bars.add(el);
+      dirty = true;
+    };
+    if (!records) document.querySelectorAll(landmarks).forEach(register);
+    else for (const r of records) {
+      if (r.type === "childList") {
+        for (const el of r.addedNodes) {
+          if (el.nodeType !== 1 || !el.isConnected) continue;
+          if (el.matches(landmarks)) register(el);
+          if (el.childElementCount) el.querySelectorAll(landmarks).forEach(register);
+        }
+      } else if (r.attributeName === "data-app-shell-active-page") dirty = true;
+      else if (["data-app-shell-focus-area", "data-app-shell-titlebar", "data-app-shell-titlebar-slot"].includes(r.attributeName)) register(r.target);
+    }
+    for (const pane of panes) if (!pane.isConnected || !pane.matches(paneSelector)) {
+      panes.delete(pane); rebind = dirty = true;
+    }
+    for (const bar of bars) if (!bar.isConnected || !bar.matches(barSelector)) {
+      bars.delete(bar); bar.removeAttribute(previewAttr);
+    }
+    if (rebind) {
+      paneObserver.disconnect();
+      for (const pane of panes) paneObserver.observe(pane, {attributes:true, attributeFilter:["style","inert","aria-hidden"]});
+    }
+    if (dirty) updatePreviewBars();
+  };
+
   const scopeMatches = (scope, baseState, overlay) => {
     const active = new Set([baseState]);
     if (baseState !== "settings") active.add("all");
@@ -988,6 +1044,112 @@
     if (scopePass) refreshScope();
   };
 
+  // The Work composer reveals the submitted turn, then holds the viewport.
+  // Wait for submission to take effect before overriding that placement.
+  const sendListeners = new AbortController();
+  let sendFollow = null;
+  const watchSend = (event) => {
+    if (event.type === 'keydown' && (event.key !== 'Enter' || event.shiftKey || event.altKey ||
+        event.isComposing || event.keyCode === 229 || event.repeat)) return;
+    const target = event.target;
+    const composer = target.closest?.('[data-thread-find-composer]');
+    if (!composer?.querySelector('[data-codex-composer-root]') || composer.closest('[inert]')) return;
+    const editorSelector = '[contenteditable="true"], textarea';
+    if (event.type === 'keydown') {
+      if (!target.closest(editorSelector)) return;
+    } else if (!target.closest('button:is([type="submit"], .bg-composer-primary):not(:disabled, [aria-disabled="true"])')) return;
+
+    const footer = composer.closest('[data-thread-scroll-footer]');
+    if (!footer) return;
+    // Some layouts mount the footer next to the scroll container.
+    let scope = footer;
+    let scroller = footer.closest('.thread-scroll-container');
+    while (!scroller && scope.parentElement) {
+      scope = scope.parentElement;
+      const candidates = scope.querySelectorAll('.thread-scroll-container');
+      if (candidates.length > 1) return;
+      scroller = candidates[0];
+    }
+    const content = scroller?.querySelector('[data-thread-user-message-navigation-content]');
+    if (!content || scroller.closest('[inert], [data-app-shell-active-page="false"]')) return;
+    sendFollow?.abort();
+    const controller = sendFollow = new AbortController();
+    const { signal } = controller;
+    const options = { capture: true, passive: true, signal };
+    const stop = () => controller.abort();
+    const initialUrl = location.href;
+    const editorText = () => {
+      const editor = composer.querySelector(editorSelector);
+      return (editor?.value ?? editor?.textContent ?? '').trim();
+    };
+    const hadDraft = Boolean(editorText());
+    const bubble = '[data-user-message-bubble]';
+    const previous = Array.from(content.querySelectorAll(bubble)).pop();
+    let confirmed = false;
+    let frame = 0;
+    const follow = () => {
+      frame = 0;
+      if (!content.isConnected || !footer.isConnected || location.href !== initialUrl ||
+          scroller.clientHeight === 0 || scroller.closest('[inert], [data-app-shell-active-page="false"]')) {
+        stop();
+        return;
+      }
+      const jump = footer.querySelector('button[class~="group/scroll-to-bottom"][aria-hidden="false"]');
+      if (jump) {
+        stop();
+        jump.click();
+      } else if (scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop > 0.5) {
+        scroller.scrollTop = scroller.scrollHeight;
+      }
+    };
+    const schedule = () => {
+      if (!frame && !signal.aborted) frame = requestAnimationFrame(follow);
+    };
+    const resize = new ResizeObserver(schedule);
+    const timeout = setTimeout(stop, 10000);
+    const mutations = new MutationObserver((records) => {
+      if (!confirmed) {
+        const appendedBubble = records.some(record => Array.from(record.addedNodes).some(node => {
+          const added = node.matches?.(bubble) ? node : node.querySelector?.(bubble);
+          return added && content.contains(added) && (!previous || !content.contains(previous) ||
+            (previous.compareDocumentPosition(added) & Node.DOCUMENT_POSITION_FOLLOWING));
+        }));
+        if (!appendedBubble && !(hadDraft && composer.isConnected && !editorText())) return;
+        confirmed = true;
+        clearTimeout(timeout);
+        mutations.disconnect();
+        resize.observe(content);
+        resize.observe(scroller);
+        // Once the native button is available it also enables streaming follow.
+        mutations.observe(footer, { subtree: true, attributes: true, attributeFilter: ['aria-hidden'], childList: true });
+      }
+      schedule();
+    });
+    mutations.observe(content, { childList: true, subtree: true });
+    mutations.observe(composer, { childList: true, subtree: true, characterData: true });
+    composer.addEventListener('beforeinput', () => { if (!confirmed) stop(); }, options);
+    scroller.addEventListener('wheel', e => { if (e.deltaY < 0) stop(); }, options);
+    scroller.addEventListener('pointerdown', e => { if (!composer.contains(e.target)) stop(); }, options);
+    scroller.addEventListener('touchstart', stop, options);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' || (!e.target.closest?.(editorSelector) &&
+          ['ArrowUp', 'PageUp', 'Home', ' '].includes(e.key))) stop();
+    }, options);
+    window.navigation?.addEventListener('navigate', stop, { signal });
+    signal.addEventListener('abort', () => {
+      clearTimeout(timeout);
+      cancelAnimationFrame(frame);
+      mutations.disconnect();
+      resize.disconnect();
+      if (sendFollow === controller) sendFollow = null;
+    }, { once: true });
+  };
+  if (isYouMingHuaTheme) {
+    for (const event of ['keydown', 'click']) {
+      document.addEventListener(event, watchSend, { capture: true, signal: sendListeners.signal });
+    }
+  }
+
   const cleanup = () => {
     const state = window[STATE_KEY];
     if (state?.installToken !== installToken) return false;
@@ -1003,6 +1165,12 @@
         root.style.removeProperty(property);
       }
     }
+    sendListeners.abort();
+    sendFollow?.abort();
+    paneObserver?.disconnect();
+    for (const bar of bars) bar.removeAttribute(previewAttr);
+    bars.clear();
+    panes.clear();
     removeParts();
     removePredicates();
     state?.rootObserver?.disconnect();
@@ -1057,9 +1225,40 @@
     // Navigation API emits no event. Keep verification scope and public parts
     // derived from the same post-mutation tree.
     const predicateClass = /main-surface|_MainContentSurface_|home-banners|_homeUtilityBar_|_ComposerHomeUtilityBar_|horizontal-scroll-fade-mask|group\/project-selector/;
+    // Fast path only for inert Markdown inside a known content boundary.
+    // Inspect inserted AND detached subtrees: an embedded dialog or a moved
+    // message owner still needs the ordinary structural reconciliation.
+    const proseBoundary = 'article, [data-message-author-role], [data-local-conversation-final-assistant], [class*="_markdown"], .markdown, .markdown-body, .prose';
+    const proseTags = new Set("P BR HR H1 H2 H3 H4 H5 H6 UL OL LI PRE CODE EM STRONG B I S DEL BLOCKQUOTE SPAN A".split(" "));
+    const proseClasses = /^(?:language-[\w-]+|hljs(?:-[\w-]+)?|token|keyword|string|number|comment|punctuation|operator)$/;
+    const plainNode = (node) => {
+      if (node.nodeType === 3 || node.nodeType === 8) return true;
+      if (node.namespaceURI !== "http://www.w3.org/1999/xhtml" || !proseTags.has(node.tagName)) return false;
+      for (const attr of node.attributes) {
+        if (attr.name === "class" && [...node.classList].every((name) => proseClasses.test(name))) continue;
+        if (node.tagName === "A" && ["href", "title", "target", "rel"].includes(attr.name)) continue;
+        if (node.tagName === "OL" && attr.name === "start") continue;
+        return false;
+      }
+      return true;
+    };
+    const plainTree = (root) => {
+      if (!plainNode(root)) return false;
+      // Walk only the changed branch; no document query or layout read.
+      const walk = document.createTreeWalker(root, 1 /* SHOW_ELEMENT */);
+      for (let child; (child = walk.nextNode());) if (!plainNode(child)) return false;
+      return true;
+    };
+    const proseOnly = (record) => {
+      if (!record.target.closest?.(proseBoundary)) return false;
+      for (const nodes of [record.addedNodes, record.removedNodes]) {
+        for (const node of nodes) if (!plainTree(node)) return false;
+      }
+      return true;
+    };
     partObserver = new MutationObserver((records) => {
       const changed = records.some((record) => {
-        if (record.type !== "attributes") return true;
+        if (record.type === "childList") return !proseOnly(record);
         const current = record.target.getAttribute(record.attributeName);
         if (record.oldValue === current) return false;
         if (record.attributeName !== "class") return true;
@@ -1067,7 +1266,10 @@
           .filter((token) => predicateClass.test(token)).sort().join(" ");
         return structuralClasses(record.oldValue) !== structuralClasses(current);
       });
-      if (changed) scheduleEnsure({ scope: true, parts: true }, 80);
+      if (changed) {
+        reconcilePreviewBars(records);
+        scheduleEnsure({ scope: true, parts: true }, 80);
+      }
     });
   }
 
@@ -1132,7 +1334,8 @@
       attributeFilter: [
         "class", "role", "data-testid", "data-app-shell-main-surface",
         "data-app-shell-active-page", "data-codex-composer-root", "type",
-        "data-mention-list-scroll-area",
+        "data-mention-list-scroll-area", "data-app-shell-focus-area",
+        "data-app-shell-titlebar", "data-app-shell-titlebar-slot",
       ],
     });
   };
@@ -1140,6 +1343,7 @@
   const observeBody = () => {
     observeAttributes(document.body);
     observePartTree(document.body);
+    reconcilePreviewBars();
   };
   if (document.body) observeBody();
   else if (typeof document.addEventListener === "function") {

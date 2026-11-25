@@ -850,7 +850,7 @@ hot_reapply_theme() {
     ')"
   fi
   if ! "$NODE" "$INJECTOR" --once --port "$port" --theme-dir "$THEME_DIR" \
-    --timeout-ms "$timeout_ms" "${operation_args[@]}" >/dev/null 2>&1; then
+    --timeout-ms "$timeout_ms" "${operation_args[@]}" >/dev/null 2>>"$START_ERROR_LOG"; then
     return 1
   fi
 

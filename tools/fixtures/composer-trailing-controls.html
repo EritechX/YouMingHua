@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN" data-dream-skin="active">
+<meta charset="utf-8">
+<title>Work / Chat 模型选择器回归检查</title>
+<link id="skin" rel="stylesheet" href="../../macos/assets/dream-skin.css">
+<style>
+  body { margin: 8px; font: 14px system-ui; }
+  #shell { max-width: 720px; padding: 10px; border: 1px solid #ead9e1; border-radius: 16px; background: #fcf7f9; color:#685c67 }
+  #footer { display: grid; align-items: end; gap: 5px; grid-template-columns:auto minmax(0,1fr) auto }
+  #footer[data-composer-layout=multiline] {grid-template-columns:minmax(0,auto) auto minmax(0,1fr)}
+  #footer[data-composer-layout=multiline] #editor {grid-column:1/-1;grid-row:1;min-height:42px}
+  #footer[data-composer-layout=multiline] #trailing {grid-column:3}
+  #trailing { display:flex; justify-content:end; border-radius:999px }
+  [class~="bg-(--composer-layout-surface-background)"] { background: var(--composer-layout-surface-background, #f3e7ed) }
+  button { border:0; background:transparent; color:inherit; height:28px; font:inherit; border-radius:999px }
+  #send {width:28px; background:#d9a4ba}
+</style>
+<div id="shell"><div id="footer" data-composer-layout="multiline">
+  <button aria-label="添加">＋</button><span id="editor">使用 ChatGPT Work</span>
+  <div id="trailing" data-composer-trailing-controls class="min-w-0 z-30 rounded-full bg-(--composer-layout-surface-background)">
+    <button id="picker" aria-haspopup="menu">GPT-6.2 Astra 高</button><button aria-label="麦克风">♩</button><button id="send" aria-label="发送">↑</button>
+  </div>
+</div></div>
+<output id="result" hidden>pending</output>
+<script>
+const transparent = 'rgba(0, 0, 0, 0)';
+const bg = el => getComputedStyle(el).backgroundColor;
+const boxes = () => JSON.stringify([...footer.querySelectorAll('button')].map(b=>b.getBoundingClientRect().toJSON()));
+function check(ok, msg){if(!ok) throw Error(msg)}
+try {
+  for(const mode of ['Work', 'legacy Chat']){
+    const legacy = mode === 'legacy Chat';
+    shell.toggleAttribute('data-chatgpt-composer', legacy);
+    if(legacy) footer.dataset.dsPart='composer-toolbar'; else delete footer.dataset.dsPart;
+    trailing.toggleAttribute('data-composer-trailing-controls', !legacy);
+    for(const layout of ['single-line','multiline']){
+      footer.dataset.composerLayout=layout;
+      document.documentElement.removeAttribute('data-dream-skin');
+      const before=boxes(), action=bg(send);
+      check(bg(trailing)!==transparent, 'native surface missing');
+      document.documentElement.dataset.dreamSkin='active';
+      check(bg(trailing)===transparent, mode+' / '+layout+' extra surface');
+      check(bg(send)===action && action!==transparent && boxes()===before, 'button style or layout changed');
+      let r=picker.getBoundingClientRect();
+      check(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===picker, 'picker hit area');
+    }
+  }
+  result.textContent='PASS';
+} catch(e) { result.textContent='FAIL: '+e.message; }
+shell.removeAttribute('data-chatgpt-composer'); delete footer.dataset.dsPart;
+trailing.setAttribute('data-composer-trailing-controls','');footer.dataset.composerLayout='multiline';
+</script>
+</html>

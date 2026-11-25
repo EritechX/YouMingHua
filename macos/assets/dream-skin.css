@@ -260,7 +260,7 @@ html[data-dream-skin="active"] aside.app-shell-left-panel svg:not([style^="color
   color: rgb(var(--ds-muted-rgb) / .96) !important;
 }
 
-html[data-dream-skin="active"] aside.app-shell-left-panel button:hover,
+html[data-dream-skin="active"] aside.app-shell-left-panel button:hover:not(:where([aria-current="page"] [data-interactive-row-button])),
 html[data-dream-skin="active"] aside.app-shell-left-panel a:hover {
   background: rgb(var(--ds-accent-rgb) / .09) !important;
   color: var(--ds-text) !important;
@@ -287,8 +287,11 @@ html[data-dream-skin="active"] aside.app-shell-left-panel button[aria-label^="åˆ
   color: var(--ds-secondary);
 }
 
-html[data-dream-skin="active"] aside.app-shell-left-panel [class~="bg-token-list-hover-background"],
-html[data-dream-skin="active"] aside.app-shell-left-panel [aria-current="page"] {
+/* Work and Codex both mark the row and its title button as current.
+   Only Codex sets data-app-action-sidebar-thread-row. Use the shared
+   current ancestor so the row owns the paint and the button keeps focus. */
+html[data-dream-skin="active"] aside.app-shell-left-panel
+  :is([class~="bg-token-list-hover-background"], [aria-current="page"]):not(:where([aria-current="page"] [data-interactive-row-button])) {
   background: rgb(var(--ds-accent-rgb) / .12) !important;
   border: 1px solid rgb(var(--ds-accent-rgb) / .22) !important;
   box-shadow: 0 4px 16px rgb(var(--ds-bg-rgb) / .12) !important;
@@ -353,7 +356,7 @@ html[data-dream-skin="active"]:is([data-dream-task-mode="ambient"], [data-dream-
   height: auto;
 }
 
-html[data-dream-skin="active"]:is([data-dream-task-mode="ambient"], [data-dream-art-task-mode="ambient"], [data-dream-task-mode="banner"], [data-dream-art-task-mode="banner"])[data-dream-art-wide="true"]:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"])):not(:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]):not([data-app-shell-active-page="false"], [data-app-shell-active-page="false"] *) [role="main"])) body {
+html[data-dream-skin="active"]:is([data-dream-task-mode="ambient"], [data-dream-art-task-mode="ambient"], [data-dream-task-mode="banner"], [data-dream-art-task-mode="banner"])[data-dream-art-wide="true"]:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"])):not(:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]):not([data-app-shell-active-page="false"], [data-app-shell-active-page="false"] *) [role="main"])) body > #root {
   background-image: var(--dream-skin-art) !important;
   background-position: var(--ds-art-position) !important;
   background-size: cover !important;
@@ -361,7 +364,7 @@ html[data-dream-skin="active"]:is([data-dream-task-mode="ambient"], [data-dream-
   background-attachment: fixed !important;
 }
 
-html[data-dream-skin="active"]:is([data-dream-task-mode="full"], [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"])):not(:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]):not([data-app-shell-active-page="false"], [data-app-shell-active-page="false"] *) [role="main"])) body {
+html[data-dream-skin="active"]:is([data-dream-task-mode="full"], [data-dream-art-task-mode="full"])[data-dream-art-wide="true"]:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"])):not(:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]):not([data-app-shell-active-page="false"], [data-app-shell-active-page="false"] *) [role="main"])) body > #root {
   background-image: var(--dream-skin-art) !important;
   background-position: var(--ds-art-position) !important;
   background-size: cover !important;
@@ -1048,7 +1051,7 @@ html[data-dream-skin="active"][data-dream-art-wide="true"]:not(:has(main:is(.mai
 
 /* A wide image can carry the home screen too. The native hero remains live,
    but the artwork is painted once on the window instead of repeated in a card. */
-html[data-dream-skin="active"][data-dream-art-wide="true"]:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]):not([data-app-shell-active-page="false"], [data-app-shell-active-page="false"] *) [role="main"]) body {
+html[data-dream-skin="active"][data-dream-art-wide="true"]:has(main:is(.main-surface, [data-app-shell-main-surface], [class*="_MainContentSurface_"]):not([data-app-shell-active-page="false"], [data-app-shell-active-page="false"] *) [role="main"]) body > #root {
   background-image: var(--dream-skin-art) !important;
   background-position: var(--ds-art-position) !important;
   background-size: cover !important;
@@ -1794,10 +1797,7 @@ html[data-dream-skin="active"][data-dream-shell="light"][style*="--ds-bg: #F7EEF
   --color-background-danger-surface: #FFF6F8;
   --color-border-danger-outline: #E4BCCA;
   --color-text-danger: #55434D;
-  background: #FEFBFD !important;
-  border-color: #EEE1E8 !important;
   color: #443B46 !important;
-  box-shadow: none !important;
 }
 
 html[data-dream-skin="active"][data-dream-shell="light"][style*="--ds-bg: #F7EEF2" i] .thread-scroll-container .bg-execution-output {
@@ -1843,10 +1843,7 @@ html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #1E1A24
   --color-background-danger-surface: #382833;
   --color-border-danger-outline: #81576B;
   --color-text-danger: #F0DFE6;
-  background: #28212D !important;
-  border-color: #4A3A4D !important;
   color: #F0E6ED !important;
-  box-shadow: none !important;
 }
 
 html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #1E1A24" i] .thread-scroll-container .bg-execution-output {
@@ -1892,10 +1889,7 @@ html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #24252C
   --color-background-danger-surface: #363137;
   --color-border-danger-outline: #735966;
   --color-text-danger: #E5DFE4;
-  background: #2E2F36 !important;
-  border-color: #4C4953 !important;
   color: #E5E1E7 !important;
-  box-shadow: none !important;
 }
 
 html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #24252C" i] .thread-scroll-container .bg-execution-output {
@@ -1920,6 +1914,36 @@ html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #24252C
 }
 
 html[data-dream-skin="active"][data-dream-shell="dark"][style*="--ds-bg: #24252C" i] .thread-scroll-container .alert-root.bg-danger-surface { border-left: 3px solid #AE8096 !important; }
+
+/* Item target IDs are scroll anchors for many kinds of content, including
+   user follow-ups and answers. Only a visible activity earns its own frame.
+   Native bubbles, disclosures and actual output keep their own surfaces. */
+html[data-dream-skin="active"]:is(
+  [data-dream-shell="light"][style*="--ds-bg: #F7EEF2" i],
+  [data-dream-shell="dark"][style*="--ds-bg: #24252C" i],
+  [data-dream-shell="dark"][style*="--ds-bg: #1E1A24" i]
+) .thread-scroll-container [data-local-conversation-item-target-ids] {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+
+  &:has([data-response-annotation-conversation][data-response-annotation-target], [class~="group/activity-header"]):not(:has([data-user-message-bubble], .bg-user-message)) {
+    border: 1px solid rgb(var(--ds-text-rgb) / .36) !important;
+    border-radius: 16px !important;
+    padding: 10px 12px !important;
+  }
+
+  & [data-response-annotation-conversation][data-response-annotation-target] {
+    margin: 0 !important;
+    padding: 4px !important;
+    border: 0 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+}
 
 /* 26.1117 places a second painted surface behind main. The wallpaper
    already has its own readability veil; clear only this decorative backing. */
@@ -2058,10 +2082,10 @@ html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-b
 /* The right titlebar slot is a separate sibling of the main titlebar scrim.
    The trailing end-slot is a separate sibling; cover it only while the right
    actual side panel is open (not a retained titlebar container). Both slots share a paired surface and foreground. */
-html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i]):has(aside[data-app-shell-focus-area="right-panel"]:not([aria-hidden="true"], [inert], [style*="width: 0px"], [data-app-shell-active-page="false"] *))
+html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
   :is(
-    [data-app-shell-focus-area="right-panel"][data-app-shell-titlebar-slot="content"],
-    [data-app-shell-titlebar="true"] [data-app-shell-header-slot="end"]
+    [data-app-shell-focus-area="right-panel"][data-app-shell-titlebar-slot="content"][data-dream-preview-open],
+    [data-app-shell-titlebar="true"][data-dream-preview-open] [data-app-shell-header-slot="end"]
   ) {
   --app-shell-panel-background: rgb(var(--ds-panel-rgb)) !important;
   --color-surface: rgb(var(--ds-panel-rgb));
@@ -2080,26 +2104,26 @@ html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-b
   box-shadow: inset 0 -1px var(--ds-line);
 }
 
-html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i]):has(aside[data-app-shell-focus-area="right-panel"]:not([aria-hidden="true"], [inert], [style*="width: 0px"], [data-app-shell-active-page="false"] *))
+html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
   :is(
-    [data-app-shell-focus-area="right-panel"][data-app-shell-titlebar-slot="content"],
-    [data-app-shell-titlebar="true"] [data-app-shell-header-slot="end"]
+    [data-app-shell-focus-area="right-panel"][data-app-shell-titlebar-slot="content"][data-dream-preview-open],
+    [data-app-shell-titlebar="true"][data-dream-preview-open] [data-app-shell-header-slot="end"]
   ) :is(button, [role="tab"], [class~="text-default"]) {
   color: var(--ds-text) !important;
 }
 
-html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i]):has(aside[data-app-shell-focus-area="right-panel"]:not([aria-hidden="true"], [inert], [style*="width: 0px"], [data-app-shell-active-page="false"] *))
+html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
   :is(
-    [data-app-shell-focus-area="right-panel"][data-app-shell-titlebar-slot="content"],
-    [data-app-shell-titlebar="true"] [data-app-shell-header-slot="end"]
+    [data-app-shell-focus-area="right-panel"][data-app-shell-titlebar-slot="content"][data-dream-preview-open],
+    [data-app-shell-titlebar="true"][data-dream-preview-open] [data-app-shell-header-slot="end"]
   ) :is([class~="text-secondary"], [class~="text-tertiary"], [class~="text-codex-description"]) {
   color: var(--ds-muted) !important;
 }
 
 /* With no active side pane, extend the existing main scrim through the trailing
    controls instead of painting a second rectangular panel there. */
-html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i]):not(:has(aside[data-app-shell-focus-area="right-panel"]:not([aria-hidden="true"], [inert], [style*="width: 0px"], [data-app-shell-active-page="false"] *)))
-  [data-app-shell-titlebar="true"]::after {
+html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-bg: #24252C" i])
+  [data-app-shell-titlebar="true"]:not([data-dream-preview-open])::after {
   width: auto !important;
   right: 0 !important;
 }
@@ -2123,10 +2147,10 @@ html[data-dream-skin="active"]:is([style*="--ds-bg: #F7EEF2" i], [style*="--ds-b
   }
 }
 
-/* Chat's adaptive footer paints an extra rounded surface behind its trailing
-   controls. In multiline layout that grid cell stretches across the row.
-   The themed composer already owns the surface; keep this inner layer clear
-   without changing the native grid, expansion animation or button surfaces. */
+/* The expandable footer puts a second surface behind the trailing controls.
+   Work and Chat share this element but not their outer composer markup. */
+html[data-dream-skin="active"] [data-composer-trailing-controls][class~="bg-(--composer-layout-surface-background)"],
+/* Earlier Chat clients do not mark the trailing controls. */
 html[data-dream-skin="active"] [data-chatgpt-composer]
   [data-ds-part="composer-toolbar"] > [class~="bg-(--composer-layout-surface-background)"] {
   background: transparent !important;
