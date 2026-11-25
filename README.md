@@ -6,10 +6,10 @@
 
 | 平台 | 系统要求 | 下载 |
 | --- | --- | --- |
-| macOS | macOS 13+，Apple Silicon / Intel | [DMG 安装包](https://github.com/EritechX/YouMingHua/releases/download/v1.0.1/YouMingHua-v1.0.1.dmg) |
-| Windows | Windows 10 / 11，x64 | [EXE 安装包](https://github.com/EritechX/YouMingHua/releases/download/v1.0.1/YouMingHua-Setup-v1.0.1.exe) |
+| macOS | macOS 13+，Apple Silicon / Intel | [DMG 安装包](https://github.com/EritechX/YouMingHua/releases/download/v1.1.0/YouMingHua-v1.1.0.dmg) |
+| Windows | Windows 10 / 11，x64 | [EXE 安装包](https://github.com/EritechX/YouMingHua/releases/download/v1.1.0/YouMingHua-Setup-v1.1.0.exe) |
 
-当前版本：**v1.0.1 测试版** · [版本说明](https://github.com/EritechX/YouMingHua/releases/tag/v1.0.1) · [文件校验](https://github.com/EritechX/YouMingHua/releases/download/v1.0.1/SHA256SUMS.txt)
+当前版本：**v1.1.0 测试版** · [版本说明](https://github.com/EritechX/YouMingHua/releases/tag/v1.1.0) · [文件校验](https://github.com/EritechX/YouMingHua/releases/download/v1.1.0/SHA256SUMS.txt)
 
 主题已包含在安装包中，无需另外导入或安装开发工具。
 
@@ -37,7 +37,7 @@
 
 - **自动切换深浅色**：将官方客户端的外观设置为「系统 / 跟随系统」。
 - **重新应用**：macOS 菜单选择「重新应用皮肤」；Windows 选择「应用或重新应用」。
-- **更新**：从 [Releases](https://github.com/EritechX/YouMingHua/releases) 下载新版，退出又茗花和官方客户端后覆盖安装。
+- **更新**：从 [Releases](https://github.com/EritechX/YouMingHua/releases) 下载新版，退出又茗花和官方客户端后覆盖安装，再重新应用皮肤。
 - **macOS 卸载**：先选择「恢复原状并卸载…」，再将「又茗花.app」移到废纸篓。
 - **Windows 卸载**：先选择「完全恢复 Codex」，再到 Windows「设置 → 应用」卸载又茗花。
 

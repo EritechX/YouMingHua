@@ -17,11 +17,11 @@
 
 ## Release 安装（推荐普通用户）
 
-普通用户请从 [GitHub Releases](https://github.com/Fei-Away/Codex-Dream-Skin/releases) 下载
-`YouMingHua-Setup-vX.Y.Z.exe`，按 [`docs/install-windows.md`](../docs/install-windows.md) 的图形
-界面步骤安装。安装器自带固定 Node 运行时，不需要 clone 仓库或运行 `.ps1`；默认按当前用户安装，
-不应要求管理员权限。未签名的新下载偶尔会触发 SmartScreen，按“更多信息 → 仍要运行”即可，
-不要关闭 Defender。后续更新运行新的 Setup.exe 覆盖安装，主题和图片会保留。
+普通用户请从[又茗花 Releases](https://github.com/EritechX/YouMingHua/releases) 下载
+`YouMingHua-Setup-vX.Y.Z.exe`，按[Windows 安装说明](../README.md#windows)安装。
+安装器自带 Node.js，无需下载源码或运行 `.ps1`。默认只为当前用户安装，不需要管理员权限。
+若 SmartScreen 提示风险，先核对下载来源，再按安装说明操作。后续用新的 Setup.exe 覆盖安装，
+主题和图片会保留。
 
 安装脚本需要在 Codex 完全退出后运行。普通使用不需要管理员权限，也不需要接管 WindowsApps 目录。
 
